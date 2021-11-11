@@ -32,10 +32,7 @@ while i<=length(x)
    
 end
 
-
-
-
-
+% Test
 
 %% Funkkarit
 
