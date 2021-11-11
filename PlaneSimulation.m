@@ -29,7 +29,7 @@ while i<=length(x)
    
 end
 
-% Test
+% Test1
 
 %% Funkkarit
 
