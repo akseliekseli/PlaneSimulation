@@ -3,10 +3,42 @@
 
 %% TestiCommit
 
-x=1;
-<<<<<<< HEAD
-y=1;
-=======
+
+x = [1, 2, 3, 5, 6, 7, 8, 9, 10,...
+    11, 12, 13, 14, 15, 16, 17 ,18, 19, 20, 21];
+
+
+I = seatToInd(x)
+
+
+seats_in_row = 6;
+
+t_step = 1;
+i = 1;
+t_tot = 0;
+
+plane = zeros(max(x(:,1)), seats_in_row);
+
+while i<=length(x)
+   row_1 = x(i,1);
+   pos_1 = x(i,2);
+   
+   if row_1 == i
+      plane(row_1,pos_1) = 1; 
+      i = i + 1;
+      continue
+   end
+   
+   
+end
+
+
+
+
+
+
+%% Funkkarit
+
 
 % Noi on nyt rakennettu ks. jarjestyksella ja vaakasuoralla palautuksella:
 % 1, 7, 13, ...
@@ -26,9 +58,6 @@ end
 function N = indToSeat(V);
 % Converts the vector of indeces into a 1-dimensional vector of seat numbers.
     N = (V(1,:) - 1)*6 + V(2,:);  % Counts the seat number from given indices
-<<<<<<< HEAD
+
 end
->>>>>>> a32f8eaa7e2730b34ab0f2b1ed1ac7edafd658a1
-=======
-end
->>>>>>> a32f8eaa7e2730b34ab0f2b1ed1ac7edafd658a1
+
