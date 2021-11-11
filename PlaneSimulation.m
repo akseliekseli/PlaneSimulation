@@ -26,5 +26,9 @@ end
 function N = indToSeat(V);
 % Converts the vector of indeces into a 1-dimensional vector of seat numbers.
     N = (V(1,:) - 1)*6 + V(2,:);  % Counts the seat number from given indices
+<<<<<<< HEAD
+end
+>>>>>>> a32f8eaa7e2730b34ab0f2b1ed1ac7edafd658a1
+=======
 end
 >>>>>>> a32f8eaa7e2730b34ab0f2b1ed1ac7edafd658a1
