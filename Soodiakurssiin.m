@@ -1,6 +1,6 @@
 clc;clearvars;close all;
 
-planeBoarding([30,7,20,1,5,15,10],5,6)
+planeBoarding([30,7,20,1,5,15,10],5,3)
 
 % Ottaa sisään jono-vektorin, kuinka monta riviä on koneessa ja kuinka
 % monta penkkiä on rivissä
@@ -11,7 +11,7 @@ function time = planeBoarding(line,rows, seat)
     aisle = zeros(rows, 2)';
 
     % Muutetaan vektori 2-dimensioiseksi
-    row = ceil(line./seat*2);
+    row = ceil(line./(seat*2));
     column = mod(line-1,seat*2) +1;
     lineIn = [row; column];
     
@@ -40,11 +40,11 @@ function time = planeBoarding(line,rows, seat)
         % Jos käytävän ensimmäinen paikka on tyhjä, niin jonottaja ulkoa
         % voi tulla käytävä jonoon. Poistetaan kokonainen sarake
         % ulkojonosta
+        
         if(any(any(lineIn)) && aisle(1,1) == 0)
             aisle(:,1) = lineIn(:,1);
             lineIn(:,1) = [];
         end
-       
         time = time +1;
     end
     seats'
