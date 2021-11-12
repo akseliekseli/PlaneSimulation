@@ -4,6 +4,15 @@ clc
 seats_in_row = 6;                               % Penkkien maara rivilla
 rows_in_plane = 20;                             % Rivien maara koneessa 
 
+line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
+
+% line = line(randperm(length(line)))       % Talla komennolla saa
+                                            % randomoitua jarjestyksen
+
+time = planeBoarding(line, seats_in_row, rows_in_plane)  % simulaation aloitus
+
+% fixed. 
+
 %% Funkkarit
 
 function time = planeBoarding(line, seats, rows) 
@@ -61,4 +70,3 @@ function N = indToSeat(V, cn);
     N = (V(:,1) - 1)*cn + V(:,2);  % Counts the seat number from given indices
     N = N(1);
 end
-
