@@ -70,4 +70,3 @@ function N = indToSeat(V, cn);
     N = (V(:,1) - 1)*cn + V(:,2);  % Counts the seat number from given indices
     N = N(1);
 end
-
