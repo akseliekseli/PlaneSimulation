@@ -11,8 +11,7 @@ line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
 
 time = planeBoarding(line, seats_in_row, rows_in_plane)  % simulaation aloitus
 
-% plane = zeros(rows_in_plane, seats_in_row);
-% plane(I(end, 1), I(end, 2)) = indToSeat(I(end,:), seats_in_row)
+% fixed. 
 
 %% Funkkarit
 
