@@ -1,5 +1,5 @@
 %% PlaneSimulation
-clc, clearvars, close all
+
 
 x = 1:24;
 
@@ -25,9 +25,10 @@ while ii<=length(I)
    
    % Check if the first in queue is not on his row
    % If not, add another person to queue and time
-   if queue(1,1) > size(queue,1)
+   if queue(end,1) < size(queue,1)
         ii = ii + 1;
         t_tot = t_tot + t_step;
+        pause
         continue
    end
    % Stop queue and put all people on correct
@@ -46,10 +47,15 @@ while ii<=length(I)
    queue( all(~queue,2), : ) = [];
    ii = ii + 1;
    
-   t_tot = t_tot + t_step;
    
 end
 
+<<<<<<< HEAD
+=======
+% Test1
+
+%% Funkkarit
+>>>>>>> origin/Totti-S-patch-1
 
 
 % Noi on nyt rakennettu ks. jarjestyksella ja vaakasuoralla palautuksella:
@@ -73,3 +79,40 @@ function N = indToSeat(V)
 
 end
 
+
+function time = planeBoarding(lineIn) 
+    
+    % Main Run: käydään läpi niin kauan kun joko jonossa tai käytävällä on
+    % ihmisiä.
+    while (any(any(lineIn)) || any(any(aisle)))
+        aisle
+        %lineIn
+        pause
+        % Käydään läpi käytävä alkaen koneen lopusta
+        for i = rows:-1:1
+            r = aisle(1,i);
+            s = aisle(2,i);
+            % Jos käytävä jonottaja on omalla rivillä niin lisää kaveri
+            % paikalleen ja poista käytävästä. Muussa tapauksessa jos
+            % jonottajan edessä ei ole ketään, niin hän voi siirtyä
+            % eteenpäin.
+            if(r == i) 
+                seats(r,s) = 1;
+                aisle(:,i) = [0;0];
+            elseif(r && aisle(1,i+1) == 0)
+                aisle(:,i+1) = [r;s];
+                aisle(:,i) = [0;0];
+            end
+        end
+        % Jos käytävän ensimmäinen paikka on tyhjä, niin jonottaja ulkoa
+        % voi tulla käytävä jonoon. Poistetaan kokonainen sarake
+        % ulkojonosta
+        
+        if(any(any(lineIn)) && aisle(1,1) == 0)
+            aisle(:,1) = lineIn(:,1);
+            lineIn(:,1) = [];
+        end
+        time = time +1;
+    end
+    seats'
+end
