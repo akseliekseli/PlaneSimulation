@@ -37,7 +37,7 @@ function time = planeBoarding(line, seats, rows)
                 % - Poistetaan henkilo kaytavalta
                 plane(person(1), person(2)) = indToSeat(person, seats);
                 aisle(i,:) = [0, 0];
-            elseif(i ~= 20);
+            elseif(i ~= rows);
                 if (aisle(i + 1, 1) == 0);
                 % - Jos han ei ole oikealla rivilla -> siirretaan eteenpain
                 % - Siirretaan henkilo eteenpain
