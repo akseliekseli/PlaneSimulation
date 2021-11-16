@@ -3,53 +3,15 @@
 
 x = 1:24;
 
+x = x(randperm(length(x))); % Shuffle seats
 
 I = seatToInd(x)
-I = I';
 
-seats_in_row = 6;
+time = planeBoarding(I)
 
-t_step = 1;
-ii = 1;
-t_tot = 0;
 
-plane = zeros(max(I(:,1)), seats_in_row);
-queue = [];
 
-% TODO:
-% Changing row doesnt work at the moment, the first guy can't
-% get to his spot. 
-while ii<=length(I)
-   queue(end+1,:) = I(ii,:);
-   
-   
-   % Check if the first in queue is not on his row
-   % If not, add another person to queue and time
-   if queue(end,1) < size(queue,1)
-        ii = ii + 1;
-        t_tot = t_tot + t_step;
-        pause
-        continue
-   end
-   % Stop queue and put all people on correct
-   % rows to their places
-   for jj=1:size(queue,1)
-       
-       if queue(jj,1) == jj
-          queue(jj,1)
-          queue(jj,2)
-          plane(queue(jj,1),queue(jj,2)) = 1
-          queue(jj,:) = 0;
-          
-          
-       end
-   end
-   queue( all(~queue,2), : ) = [];
-   ii = ii + 1;
-   
-   
-end
-
+%% Funkkarit
 
 
 % Noi on nyt rakennettu ks. jarjestyksella ja vaakasuoralla palautuksella:
@@ -73,3 +35,47 @@ function N = indToSeat(V)
 
 end
 
+
+function time = planeBoarding(lineIn)
+    
+% setuppia
+    time = 0;
+    rows = max(lineIn(1,:));
+    seat = max(lineIn(2,:));
+    seats = zeros(rows, seat);
+    aisle = zeros(rows, 2)';
+    
+    % Main Run: käydään läpi niin kauan kun joko jonossa tai käytävällä on
+    % ihmisiä.
+    while (any(any(lineIn)) || any(any(aisle)))
+        aisle
+        %lineIn
+        
+        % Käydään läpi käytävä alkaen koneen lopusta
+        for i = rows:-1:1
+            r = aisle(1,i);
+            s = aisle(2,i);
+            % Jos käytävä jonottaja on omalla rivillä niin lisää kaveri
+            % paikalleen ja poista käytävästä. Muussa tapauksessa jos
+            % jonottajan edessä ei ole ketään, niin hän voi siirtyä
+            % eteenpäin.
+            if(r == i) 
+                seats(r,s) = 1;
+                aisle(:,i) = [0;0];
+            elseif(r && aisle(1,i+1) == 0)
+                aisle(:,i+1) = [r;s];
+                aisle(:,i) = [0;0];
+            end
+        end
+        % Jos käytävän ensimmäinen paikka on tyhjä, niin jonottaja ulkoa
+        % voi tulla käytävä jonoon. Poistetaan kokonainen sarake
+        % ulkojonosta
+        
+        if(any(any(lineIn)) && aisle(1,1) == 0)
+            aisle(:,1) = lineIn(:,1);
+            lineIn(:,1) = [];
+        end
+        time = time +1;
+    end
+    seats'
+end
