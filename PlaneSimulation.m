@@ -110,17 +110,25 @@ function wait_time = determineTime(time_step, person, row);
     % oikea etaisyys:
     % esim 3 + 3 penkkia, niin paikka 1 on 3 etaisyydella kaytavasta
     time_fun = @(x) (abs(seatsOnSide + 0.5 - x) + 0.5)*time_step;
-    for i = 1:length(row);
+    
+    % Määritetään kummalla puolella henkilö istuu
+    if (person(2) > seatsOnSide)
+        aisle = seatsOnSide + 1;
+        window = seatsOnSide* 2;
+        increment = 1;
+    else 
+        aisle = seatsOnSide;
+        window = 1;
+        increment = -1;
+    end
+    % Lasketaan aika mikä  menee istumiseen
+    for i = aisle:increment:window
         if (i == person(2))
             % henkilon istuuntumisaika
             seating_time = seating_time + time_fun(i);
-        elseif ((i < person(2)) && (person(2) > seatsOnSide) && (i > seatsOnSide) && (row(i) > 0));
-            % paikat n/2 - n, tarkistus
+        elseif ( row(i) )
+            % Jos joku istuu välissä istumisenprosessin kestoa
             seating_time = seating_time + 2*time_fun(i);
-        elseif ((i > person(2)) && (person(2) <= seatsOnSide) && (i <= seatsOnSide) && (row(i) > 0));
-            % paikat 1 - n/2, tarkistus
-            seating_time = seating_time + 2*time_fun(i);
-        end
     end
     seating_time;
     % kokonaisaika tulee naiden summana:
