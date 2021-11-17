@@ -17,7 +17,7 @@ line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
 line = line(randperm(length(line)));       % Talla komennolla saa
                                             % randomoitua jarjestyksen
 random = randi([0, t_step*20], length(line),1);
-%time = planeBoarding(line, seats_in_row, rows_in_plane,t_step,random)  % simulaation aloitus
+time = planeBoarding(line, seats_in_row, rows_in_plane,t_step,random)  % simulaation aloitus
 
 % fixed. 
 
@@ -121,11 +121,12 @@ function wait_time = determineTime(time_step, person, row)
         window = 1;
         increment = -1;
     end
-    % Lasketaan aika mikä  menee istumiseen
+    % Lasketaan aika mikä menee istumiseen
     for i = aisle:increment:window
         if (i == person(2))
             % henkilon istuuntumisaika
             seating_time = seating_time + time_fun(i);
+            break;
         elseif ( row(i) )
             % Jos joku istuu välissä istumisenprosessin kestoa
             seating_time = seating_time + 2*time_fun(i);
@@ -157,9 +158,9 @@ function pass = runTestCase(tests, expectedOutcomes)
     for i = 1:size(tests,1)
         pituus = tests(i,1);
         n = pituus + 1;
-        param1 = tests(1,2:n)
-        param2 = tests(end-1)
-        param3 = tests(end)
+        param1 = tests(1,2:n);
+        param2 = tests(end-1);
+        param3 = tests(end);
         time = planeBoarding(param1', param2, param3,1)
         
         if (expectedOutcomes(i) == time)
