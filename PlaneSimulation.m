@@ -16,7 +16,6 @@ line = line(randperm(length(line)));       % Talla komennolla saa
 
 time = planeBoarding(line, seats_in_row, rows_in_plane, 0)  % simulaation aloitus
 
-%
 %% Funkkarit
 
 function [time, varargout] = planeBoarding(line, seats, rows, test) 
