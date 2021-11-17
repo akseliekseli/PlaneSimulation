@@ -52,7 +52,7 @@ function [time, varargout] = planeBoarding(line, seats, rows, test)
                         aisle(i,:) = [0, 0];
                         odotus(i, :) = [0, 0];
                     end
-                elseif(i ~= rows);
+                elseif((i ~= rows) && (person(1) ~= 0));
                     if (aisle(i + 1, 1) == 0);
                     % - Jos han ei ole oikealla rivilla -> siirretaan eteenpain
                     % - Siirretaan henkilo eteenpain
