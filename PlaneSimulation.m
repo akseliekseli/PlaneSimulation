@@ -40,7 +40,7 @@ toc
 
 figure
 xmean = mean(odotus,1);
-xmean = squeeze(xmean);
+xmean = squeeze(xmean)
 heatmap(xmean)
 
 time = planeBoarding(line, seats_in_row, rows_in_plane, 0)  % simulaation aloitus
