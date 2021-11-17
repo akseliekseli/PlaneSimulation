@@ -45,7 +45,6 @@ heatmap(xmean)
 
 time = planeBoarding(line, seats_in_row, rows_in_plane, 0)  % simulaation aloitus
 
-
 %% Funkkarit
 
 function [time, varargout, wait_map] = planeBoarding(line, seats, rows, test) 
