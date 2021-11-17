@@ -1,10 +1,13 @@
 %% PlaneSimulation
 clc
-testRes = runTestCase();
-if (testRes ~= 1)
-    disp("Testien lapaisy: " + testRes*100 + "%")
-    return
-end
+
+tests = [5 1 3 2 3];
+l = size(tests,1);
+ev = [5];
+
+testRes = runTestCase(tests, ev);
+disp("Testeistä meni läpi: "testRes"/"+ l + " (" + (test/res)*100 +"%)")
+
      
 seats_in_row = 6;                     % Penkkien maara rivilla (parillinen)
 rows_in_plane = 20;                   % Rivien maara koneessa 
@@ -14,16 +17,15 @@ line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
 line = line(randperm(length(line)));       % Talla komennolla saa
                                             % randomoitua jarjestyksen
 
-time = planeBoarding(line, seats_in_row, rows_in_plane, 0)  % simulaation aloitus
+time = planeBoarding(line, seats_in_row, rows_in_plane)  % simulaation aloitus
 
 % fixed. 
 
 %% Funkkarit
 
-function [time, varargout] = planeBoarding(line, seats, rows, test) 
+function time = planeBoarding(line, seats, rows) 
     % setuppia
     time = 0;
-    round = 0;
     time_step = 1; % jokaisen kierroksen kuluttama aikayksikk?
     plane = zeros(rows, seats);
     aisle = zeros(rows, 2);
@@ -33,62 +35,50 @@ function [time, varargout] = planeBoarding(line, seats, rows, test)
     
     % Main Run: kaydaann lapi niin kauan kun joko jonossa tai kaytavalla on
     % ihmisia.
-    if (mod(seats, 2) == 0);
-    while (any(any(lineIn)) || any(any(aisle)));
-        % Kaydaan lapi kaytava alkaen koneen lopusta
-        for i = rows:-1:1
-            person = aisle(i,:);
-            % Tehdaan toimenpide jonottavalle henkilolle
-            if(person(1) == i)             
-                % - Tarkistetaan onko henkilo oikealla rivilla
-                % - Lasketaan henkilolle istuuntumisaika, jos istuuntuminen
-                % ei ole jo valmis.
-                % - Asetetaan henkilo paikalleen
-                % - Poistetaan henkilo kaytavalta
-                if (odotus(i, 1) == 0);
-                    odotus(i, 1) = 1;
-                    odotus(i, 2) = determineTime(time_step, person, plane(i, :));
-                elseif (odotus(i, :) == [1, 0]);
-                    plane(person(1), person(2)) = indToSeat(person, seats);
-                    aisle(i,:) = [0, 0];
-                    odotus(i, :) = [0, 0];
-                end
-            elseif(i ~= rows);
-                if (aisle(i + 1, 1) == 0);
-                % - Jos han ei ole oikealla rivilla -> siirretaan eteenpain
-                % - Siirretaan henkilo eteenpain
-                    aisle(i+1,:) = person;
-                    aisle(i,:) = [0, 0];
+    if (mod(seats, 2) == 0)
+        while (any(any(lineIn)) || any(any(aisle)))
+            % Kaydaan lapi kaytava alkaen koneen lopusta
+            for i = rows:-1:1
+                person = aisle(i,:);
+                % Tehdaan toimenpide jonottavalle henkilolle
+                if(person(1) == i)             
+                    % - Tarkistetaan onko henkilo oikealla rivilla
+                    % - Lasketaan henkilolle istuuntumisaika, jos istuuntuminen
+                    % ei ole jo valmis.
+                    % - Asetetaan henkilo paikalleen
+                    % - Poistetaan henkilo kaytavalta
+                    if (odotus(i, 1) == 0)
+                        odotus(i, 1) = 1;
+                        odotus(i, 2) = determineTime(time_step, person, plane(i, :));
+                    elseif (odotus(i, :) == [1, 0])
+                        plane(person(1), person(2)) = indToSeat(person, seats);
+                        aisle(i,:) = [0, 0];
+                        odotus(i, :) = [0, 0];
+                    end
+                elseif(i ~= rows)
+                    if (aisle(i + 1, 1) == 0);
+                    % - Jos han ei ole oikealla rivilla -> siirretaan eteenpain
+                    % - Siirretaan henkilo eteenpain
+                        aisle(i+1,:) = person;
+                        aisle(i,:) = [0, 0];
+                    end
                 end
             end
+            % Jos kaytavan ensimmainen paikka on tyhja niin jonottaja ulkoa
+            % voi tulla paastetaan kaytavalle. Poistetaan kokonainen sarake
+            % ulkojonosta.
+            if(any(any(lineIn)) && aisle(1,1) == 0)
+                aisle(1,:) = lineIn(1,:);
+                lineIn(1,:) = [];
+            end
+            % poistetaan odotusaika jokaiselta rivilta:
+            odotus(:,2) = odotus(:,2) - (odotus(:,2) > 0);
+            % kasvatetaan kulunutta aikaa ja kierrosmaaraa
+            time = time + time_step;
+
+            aisle;
+            odotus;
         end
-        % Jos kaytavan ensimmainen paikka on tyhja niin jonottaja ulkoa
-        % voi tulla paastetaan kaytavalle. Poistetaan kokonainen sarake
-        % ulkojonosta.
-        if(any(any(lineIn)) && aisle(1,1) == 0)
-            aisle(1,:) = lineIn(1,:);
-            lineIn(1,:) = [];
-        end
-        % testien vaatimat palautuksien asetukset
-        if (round == 2)
-            varargout{1} = aisle(:,1);
-        elseif (round == 3)
-            varargout{2} = plane(:,1);
-        end
-        % poistetaan odotusaika jokaiselta rivilta:
-        odotus(:,2) = odotus(:,2) - (odotus(:,2) > 0);
-        % kasvatetaan kulunutta aikaa ja kierrosmaaraa
-        time = time + time_step;
-        round = round + 1;
-        
-        % Algoritmin testauksen toimivuutta varten:
-        if (test == 1)
-            time = round;
-            odotus = [1, 0; 1, 0; 1, 0];
-        end
-        aisle;
-        odotus;
-    end
     end
     plane;
 end
@@ -148,23 +138,22 @@ function N = indToSeat(V, cn);
     N = N(1);
 end
 
-function pass = runTestCase();
-    [time, t1, t2] = planeBoarding([5, 1, 3]', 2, 3, 1);
-    test_pass = [];
-    if (t1 == [2 0 3]');
-        test_pass(end+1) = 1;
-    else
-        test_pass(end+1) = 0;
+% Ottaa sisään matriisin testejä
+% Jokainen rivi on yksi testi
+% tests, sisältää planeBoarding parametrit.
+function pass = runTestCase(tests, expectedOutcomes);
+    pass = 0;
+    for i = 1:size(test,1)
+        pituus = tests(i,1)
+        n = pituus + 2;
+        param1 = tests(1,2:n);
+        param2 = tests(end-1);
+        param3 = tests(end);
+        time = planeBoarding(param1', param2, param3);
+        
+        if (expectedOutcomes(i) == time)
+            pass = pass + 1;
+        end
     end
-    if (t2 == [1 0 5]');
-        test_pass(end+1) = 1;
-    else
-        test_pass(end+1) = 0;
-    end
-    if (time == 5);
-        test_pass(end+1) = 1;
-    else
-        test_pass(end+1) = 0;
-    end
-    pass = (sum(test_pass)) / length(test_pass);     
 end
+
