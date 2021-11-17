@@ -1,20 +1,46 @@
 %% PlaneSimulation
-clc
-testRes = runTestCase();
-if (testRes ~= 1)
-    disp("Testien lapaisy: " + testRes*100 + "%")
-    return
-end
+clc, clearvars, close all
+% testRes = runTestCase();
+% if (testRes ~= 1)
+%     disp("Testien lapaisy: " + testRes*100 + "%")
+%     return
+% end
      
 seats_in_row = 6;                     % Penkkien maara rivilla (parillinen)
 rows_in_plane = 20;                   % Rivien maara koneessa 
 
 line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
 
-line = line(randperm(length(line)));       % Talla komennolla saa
-                                           % randomoitua jarjestyksen
+tic
+
+n = 100;
+time = [];
+odotus=[];
+for i = 1:n
+    line = line(randperm(length(line)));       % Talla komennolla saa
+
+
+    line = line(randperm(length(line)));       % Talla komennolla saa
+                                            % randomoitua jarjestyksen
+    [time(i), odotus(i,:,:)] = planeBoarding(line,...
+                                            seats_in_row,...
+                                            rows_in_plane, 0);  % simulaation aloitus
+end
+histogram(time)
+title('Random')
+m = mean(time);
+subtitle(['Mean: ',num2str(m,'%.2f')])
+toc
+                                 % randomoitua jarjestyksen
+figure
+xmean = mean(odotus,1);
+xmean = squeeze(xmean);
+heatmap(xmean)
 
 time = planeBoarding(line, seats_in_row, rows_in_plane, 0)  % simulaation aloitus
+
+
+
 
 %
 %% Funkkarit
@@ -25,6 +51,7 @@ function [time, varargout] = planeBoarding(line, seats, rows, test)
     round = 0;
     time_step = 1; % jokaisen kierroksen kuluttama aikayksikk?
     plane = zeros(rows, seats);
+    wait_map = plane;
     aisle = zeros(rows, 2);
     odotus = zeros(rows, 2);
     % Muunnetaan jono vektori sisaltamaan indeksit
@@ -47,17 +74,23 @@ function [time, varargout] = planeBoarding(line, seats, rows, test)
                     if (odotus(i, 1) == 0);
                         odotus(i, 1) = 1;
                         odotus(i, 2) = determineTime(time_step, person, plane(i, :));
+                        wait_map(person(1),person(2)) = wait_map(person(1),person(2))...
+                                                    + odotus(i,2);
                     elseif (odotus(i, :) == [1, 0]);
                         plane(person(1), person(2)) = indToSeat(person, seats);
                         aisle(i,:) = [0, 0];
                         odotus(i, :) = [0, 0];
                     end
-                elseif(i ~= rows);
+                elseif((i ~= rows) && (person(1)~=0))
                     if (aisle(i + 1, 1) == 0);
                     % - Jos han ei ole oikealla rivilla -> siirretaan eteenpain
                     % - Siirretaan henkilo eteenpain
                         aisle(i+1,:) = person;
                         aisle(i,:) = [0, 0];
+                        person;
+                        % TODO Person on (0, 0), joten indexöinti ei toimi?
+                        wait_map(person(1),person(2)) = wait_map(person(1),person(2))...
+                                                               +time_step;
                     end
                 end
             end
@@ -85,10 +118,12 @@ function [time, varargout] = planeBoarding(line, seats, rows, test)
                     varargout{2} = plane(:,1);
                 end
             end
+            
             aisle;
             odotus;
         end
     end
+    varargout{1} = wait_map;
     plane;
 end
 
