@@ -1,14 +1,14 @@
 %% PlaneSimulation
 clc
 
-tests = [5 1 3 2 3];
+tests = [3 5 1 3 2 3];
 l = size(tests,1);
-ev = [5];
+ev = [7];
 
 testRes = runTestCase(tests, ev);
-disp("Testeistä meni läpi: "testRes"/"+ l + " (" + (test/res)*100 +"%)")
+disp("Testeistä meni läpi: "+ testRes +" / "+ l + " (" + (testRes/l)*100 +"%)")
 
-     
+t_step = 1;
 seats_in_row = 6;                     % Penkkien maara rivilla (parillinen)
 rows_in_plane = 20;                   % Rivien maara koneessa 
 
@@ -16,24 +16,34 @@ line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
 
 line = line(randperm(length(line)));       % Talla komennolla saa
                                             % randomoitua jarjestyksen
-
-time = planeBoarding(line, seats_in_row, rows_in_plane)  % simulaation aloitus
+random = randi([0, t_step*20], length(line),1);
+%time = planeBoarding(line, seats_in_row, rows_in_plane,t_step,random)  % simulaation aloitus
 
 % fixed. 
 
 %% Funkkarit
 
-function time = planeBoarding(line, seats, rows) 
+function time = planeBoarding(line, seats, rows, varargin)
+    switch nargin
+        case 5
+            time_step = varargin{1};
+            random = varargin{2};
+        case 4
+            time_step = varargin{1};
+            random = zeros(rows,1);
+        otherwise
+            time_step = 1;
+            random = zeros(rows,1);
+    end
     % setuppia
     time = 0;
-    time_step = 1; % jokaisen kierroksen kuluttama aikayksikk?
     plane = zeros(rows, seats);
-    aisle = zeros(rows, 2);
-    odotus = zeros(rows, 2);
+    aisle = zeros(rows, 3);
+    odotus = zeros(rows, 3);
     % Muunnetaan jono vektori sisaltamaan indeksit
     lineIn = seatToInd(line, seats);
-    
-    % Main Run: kaydaann lapi niin kauan kun joko jonossa tai kaytavalla on
+    lineIn(:,3) = random';
+    % Main Run: Kaydaan lapi niin kauan kun joko jonossa tai kaytavalla on
     % ihmisia.
     if (mod(seats, 2) == 0)
         while (any(any(lineIn)) || any(any(aisle)))
@@ -50,17 +60,17 @@ function time = planeBoarding(line, seats, rows)
                     if (odotus(i, 1) == 0)
                         odotus(i, 1) = 1;
                         odotus(i, 2) = determineTime(time_step, person, plane(i, :));
-                    elseif (odotus(i, :) == [1, 0])
+                    elseif (odotus(i,(1:2)) == [1 0])
                         plane(person(1), person(2)) = indToSeat(person, seats);
-                        aisle(i,:) = [0, 0];
-                        odotus(i, :) = [0, 0];
+                        aisle(i,:) = zeros(1,size(aisle,2));
+                        odotus(i, :) = zeros(1,size(odotus,2));
                     end
                 elseif(i ~= rows)
-                    if (aisle(i + 1, 1) == 0);
+                    if (aisle(i + 1, 1) == 0)
                     % - Jos han ei ole oikealla rivilla -> siirretaan eteenpain
                     % - Siirretaan henkilo eteenpain
                         aisle(i+1,:) = person;
-                        aisle(i,:) = [0, 0];
+                        aisle(i,:) = zeros(1,size(aisle,2));
                     end
                 end
             end
@@ -83,15 +93,15 @@ function time = planeBoarding(line, seats, rows)
     plane;
 end
 
-function wait_time = determineTime(time_step, person, row);
+function wait_time = determineTime(time_step, person, row)
 % Laskee ajan istuuntumiselle, riippuen satunnaisuudesta, istumapaikasta ja rivin tayteydesta
     seating_time = 0;
-    stowing_time = 0;
+    stowing_time = person(3);
     % Satunnainen aika, joka matkatavaroiden laittamiseen kuluu
     % aika-askel - 20*aika_askel
-    stowing_time = randi([0, time_step*20]);
-    % istuuntumisaika lasketaan esim: seuraavasti
-    % et?isyys kaytavasta * aika asekel
+
+    % Istuuntumisaika lasketaan seuraavasti:
+    % etaisyys kaytavasta * aika askel
     % Mikali toiset ihmiset ovat edessa:
     % jokainen edessa oleva nousee ja istuuntuu takaisin:
     % + 2 * ylempi (jokaista henkiloa kohden)
@@ -119,20 +129,21 @@ function wait_time = determineTime(time_step, person, row);
         elseif ( row(i) )
             % Jos joku istuu välissä istumisenprosessin kestoa
             seating_time = seating_time + 2*time_fun(i);
+        end
     end
     seating_time;
     % kokonaisaika tulee naiden summana:
     wait_time = stowing_time + seating_time;
 end
 
-function I = seatToInd(L, cn);
+function I = seatToInd(L, cn)
 % Converts the vector of seat numbers into a 2-dimensional vector of indeces.
     R = ceil(L./cn);     % Counts the row in plane from the seat number [1, n]
     C = mod(L-1, cn)+1;  % Counts the row position from the seat number [1, 6]
     I = [R, C];
 end
 
-function N = indToSeat(V, cn);
+function N = indToSeat(V, cn)
 % Converts the vector of indeces into a 1-dimensional vector of seat numbers.
     N = (V(:,1) - 1)*cn + V(:,2);  % Counts the seat number from given indices
     N = N(1);
@@ -141,19 +152,18 @@ end
 % Ottaa sisään matriisin testejä
 % Jokainen rivi on yksi testi
 % tests, sisältää planeBoarding parametrit.
-function pass = runTestCase(tests, expectedOutcomes);
+function pass = runTestCase(tests, expectedOutcomes)
     pass = 0;
-    for i = 1:size(test,1)
-        pituus = tests(i,1)
-        n = pituus + 2;
-        param1 = tests(1,2:n);
-        param2 = tests(end-1);
-        param3 = tests(end);
-        time = planeBoarding(param1', param2, param3);
+    for i = 1:size(tests,1)
+        pituus = tests(i,1);
+        n = pituus + 1;
+        param1 = tests(1,2:n)
+        param2 = tests(end-1)
+        param3 = tests(end)
+        time = planeBoarding(param1', param2, param3,1)
         
         if (expectedOutcomes(i) == time)
             pass = pass + 1;
         end
     end
 end
-
