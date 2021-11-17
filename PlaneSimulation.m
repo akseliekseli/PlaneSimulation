@@ -12,11 +12,9 @@ rows_in_plane = 20;                   % Rivien maara koneessa
 line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
 
 line = line(randperm(length(line)));       % Talla komennolla saa
-                                            % randomoitua jarjestyksen
+                                           % randomoitua jarjestyksen
 
 time = planeBoarding(line, seats_in_row, rows_in_plane, 0)  % simulaation aloitus
-
-% fixed. 
 
 %% Funkkarit
 
@@ -34,61 +32,61 @@ function [time, varargout] = planeBoarding(line, seats, rows, test)
     % Main Run: kaydaann lapi niin kauan kun joko jonossa tai kaytavalla on
     % ihmisia.
     if (mod(seats, 2) == 0);
-    while (any(any(lineIn)) || any(any(aisle)));
-        % Kaydaan lapi kaytava alkaen koneen lopusta
-        for i = rows:-1:1
-            person = aisle(i,:);
-            % Tehdaan toimenpide jonottavalle henkilolle
-            if(person(1) == i)             
-                % - Tarkistetaan onko henkilo oikealla rivilla
-                % - Lasketaan henkilolle istuuntumisaika, jos istuuntuminen
-                % ei ole jo valmis.
-                % - Asetetaan henkilo paikalleen
-                % - Poistetaan henkilo kaytavalta
-                if (odotus(i, 1) == 0);
-                    odotus(i, 1) = 1;
-                    odotus(i, 2) = determineTime(time_step, person, plane(i, :));
-                elseif (odotus(i, :) == [1, 0]);
-                    plane(person(1), person(2)) = indToSeat(person, seats);
-                    aisle(i,:) = [0, 0];
-                    odotus(i, :) = [0, 0];
-                end
-            elseif(i ~= rows);
-                if (aisle(i + 1, 1) == 0);
-                % - Jos han ei ole oikealla rivilla -> siirretaan eteenpain
-                % - Siirretaan henkilo eteenpain
-                    aisle(i+1,:) = person;
-                    aisle(i,:) = [0, 0];
+        while (any(any(lineIn)) || any(any(aisle)));
+            % Kaydaan lapi kaytava alkaen koneen lopusta
+            for i = rows:-1:1
+                person = aisle(i,:);
+                % Tehdaan toimenpide jonottavalle henkilolle
+                if(person(1) == i)             
+                    % - Tarkistetaan onko henkilo oikealla rivilla
+                    % - Lasketaan henkilolle istuuntumisaika, jos istuuntuminen
+                    % ei ole jo valmis.
+                    % - Asetetaan henkilo paikalleen
+                    % - Poistetaan henkilo kaytavalta
+                    if (odotus(i, 1) == 0);
+                        odotus(i, 1) = 1;
+                        odotus(i, 2) = determineTime(time_step, person, plane(i, :));
+                    elseif (odotus(i, :) == [1, 0]);
+                        plane(person(1), person(2)) = indToSeat(person, seats);
+                        aisle(i,:) = [0, 0];
+                        odotus(i, :) = [0, 0];
+                    end
+                elseif(i ~= rows);
+                    if (aisle(i + 1, 1) == 0);
+                    % - Jos han ei ole oikealla rivilla -> siirretaan eteenpain
+                    % - Siirretaan henkilo eteenpain
+                        aisle(i+1,:) = person;
+                        aisle(i,:) = [0, 0];
+                    end
                 end
             end
+            % Jos kaytavan ensimmainen paikka on tyhja niin jonottaja ulkoa
+            % voi tulla paastetaan kaytavalle. Poistetaan kokonainen sarake
+            % ulkojonosta.
+            if(any(any(lineIn)) && aisle(1,1) == 0)
+                aisle(1,:) = lineIn(1,:);
+                lineIn(1,:) = [];
+            end
+
+            % poistetaan odotusaika jokaiselta rivilta:
+            odotus(:,2) = odotus(:,2) - (odotus(:,2) > 0);
+            % kasvatetaan kulunutta aikaa ja kierrosmaaraa
+            time = time + time_step;
+            round = round + 1;
+
+            % Algoritmin testauksen toimivuutta varten:
+            if (test == 1)
+                time = round;
+                odotus = [ones(rows, 1), zeros(rows, 1)];
+                if (round == 3)
+                    varargout{1} = aisle(:,1);
+                elseif (round == 4)
+                    varargout{2} = plane(:,1);
+                end
+            end
+            aisle;
+            odotus;
         end
-        % Jos kaytavan ensimmainen paikka on tyhja niin jonottaja ulkoa
-        % voi tulla paastetaan kaytavalle. Poistetaan kokonainen sarake
-        % ulkojonosta.
-        if(any(any(lineIn)) && aisle(1,1) == 0)
-            aisle(1,:) = lineIn(1,:);
-            lineIn(1,:) = [];
-        end
-        % testien vaatimat palautuksien asetukset
-        if (round == 2)
-            varargout{1} = aisle(:,1);
-        elseif (round == 3)
-            varargout{2} = plane(:,1);
-        end
-        % poistetaan odotusaika jokaiselta rivilta:
-        odotus(:,2) = odotus(:,2) - (odotus(:,2) > 0);
-        % kasvatetaan kulunutta aikaa ja kierrosmaaraa
-        time = time + time_step;
-        round = round + 1;
-        
-        % Algoritmin testauksen toimivuutta varten:
-        if (test == 1)
-            time = round;
-            odotus = [1, 0; 1, 0; 1, 0];
-        end
-        aisle;
-        odotus;
-    end
     end
     plane;
 end
@@ -109,9 +107,11 @@ function wait_time = determineTime(time_step, person, row);
     % Taman funktion pitaisi tuottaa ym logiikalla jokaiselle rivikoolle
     % oikea etaisyys:
     % esim 3 + 3 penkkia, niin paikka 1 on 3 etaisyydella kaytavasta
-    time_fun = @(x) (abs(seatsOnSide + 0.5 - x) + 0.5)*time_step;
+    % Korjattu s.e. jono voi liikkua nopeemmin kun henkilot menevat
+    % istumaan.
+    time_fun = @(x) (abs(seatsOnSide + 0.5 - x) + 0.5)*time_step + 1;
     
-    % Määritetään kummalla puolella henkilö istuu
+    % Maaritetaan kummalla puolella henkil?? istuu
     if (person(2) > seatsOnSide)
         aisle = seatsOnSide + 1;
         window = seatsOnSide* 2;
@@ -121,15 +121,21 @@ function wait_time = determineTime(time_step, person, row);
         window = 1;
         increment = -1;
     end
-    % Lasketaan aika mikä  menee istumiseen
+    % Lasketaan aika mika  menee istumiseen
+    blocking = 1;
     for i = aisle:increment:window
         if (i == person(2))
             % henkilon istuuntumisaika
+            seating_time = seating_time + time_step;
+            blocking = 0;
+        elseif ((row(i) ~= 0) && (blocking == 1))
+            % Jos joku istuu valissa istumisenprosessin kestoa
             seating_time = seating_time + time_fun(i);
-        elseif ( row(i) )
-            % Jos joku istuu välissä istumisenprosessin kestoa
-            seating_time = seating_time + 2*time_fun(i);
+        end
     end
+    % Testiprinttei
+    person;
+    row;
     seating_time;
     % kokonaisaika tulee naiden summana:
     wait_time = stowing_time + seating_time;
