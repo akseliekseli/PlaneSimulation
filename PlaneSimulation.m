@@ -19,6 +19,7 @@ rows_in_plane = 20;                   % Rivien maara koneessa
 
 line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
 
+<<<<<<< HEAD
 tic
 n = 100000;
 time = [];
@@ -33,6 +34,7 @@ m = mean(time);
 subtitle(['Mean: ',num2str(m,'%.2f')])
 toc
 
+=======
 
 
 
@@ -50,6 +52,7 @@ function time,room_made = planeBoarding(line, seats, rows)
     
     % Main Run: kaydaann lapi niin kauan kun joko jonossa tai kaytavalla on
     % ihmisia.
+<<<<<<< HEAD
     while (any(any(lineIn)) || any(any(aisle)));
         % Kaydaan lapi kaytava alkaen koneen lopusta
         for i = rows:-1:1
@@ -70,6 +73,7 @@ function time,room_made = planeBoarding(line, seats, rows)
                 end
             end
         end
+<<<<<<< HEAD
         % Jos kaytavan ensimmainen paikka on tyhja niin jonottaja ulkoa
         % voi tulla paastetaan kaytavalle. Poistetaan kokonainen sarake
         % ulkojonosta.
@@ -78,10 +82,13 @@ function time,room_made = planeBoarding(line, seats, rows)
             lineIn(1,:) = [];
         end
         time = time +1;
+=======
+>>>>>>> main
     end
     plane
 end
 
+<<<<<<< HEAD
 
 % Noi on nyt rakennettu ks. jarjestyksella ja vaakasuoralla palautuksella:
 % 1, 7, 13, ...
@@ -92,6 +99,8 @@ end
 % Kaannetaan jos halutaan vaihtaa tarkastelu esim pystysuoraksi.
 
 
+=======
+>>>>>>> main
 
 function I = seatToInd(L, cn);
 
