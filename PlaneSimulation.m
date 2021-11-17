@@ -1,10 +1,21 @@
 %% PlaneSimulation
 clc, clearvars, close all
+<<<<<<< Updated upstream
 
 seats_in_row = 6;                               % Penkkien maara rivilla
 rows_in_plane = 20;                             % Rivien maara koneessa 
 
 
+=======
+testRes = runTestCase();
+if (testRes ~= 1)
+    disp("Testien lapaisy: " + testRes*100 + "%")
+    return
+end
+     
+seats_in_row = 6;                     % Penkkien maara rivilla (parillinen)
+rows_in_plane = 20;                   % Rivien maara koneessa 
+>>>>>>> Stashed changes
 
 line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
 
