@@ -6,44 +6,65 @@ clc, clearvars, close all
 %     return
 % end
      
-seats_in_row = 6;                     % Penkkien maara rivilla (parillinen)
-rows_in_plane = 20;                   % Rivien maara koneessa 
+seats = 6;                     % Penkkien maara rivilla (parillinen)
+rows = 20;                   % Rivien maara koneessa 
+n = 1000;
 
-line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
+line = [];
 
-tic
-
-n = 100;
-time = [];
-odotus=[];
-for i = 1:n
-    line = line(randperm(length(line)));       % Talla komennolla saa
-
-
-    line = line(randperm(length(line)));       % Talla komennolla saa
-                                            % randomoitua jarjestyksen
-    [time(i), odotus(i,:,:)] = planeBoarding(line,...
-                                            seats_in_row,...
-                                            rows_in_plane, 0);  % simulaation aloitus
+% This code generates queue in a way that people go there one column at a
+% time
+for seatcol=1:seats
+   column = seatcol:seats:rows*seats-(seats-seatcol);
+    line = [line column];
 end
-histogram(time)
-title('Random')
-m = mean(time);
-subtitle(['Mean: ',num2str(m,'%.2f')])
-toc
-                                 % randomoitua jarjestyksen
+
+
+
+time = makeRandomSimulation(seats, rows,n);
+
+[time, odotus] = planeBoarding(line',...
+                               seats,...
+                               rows, 0);  
 figure
-xmean = mean(odotus,1);
-xmean = squeeze(xmean);
-heatmap(xmean)
-
-time = planeBoarding(line, seats_in_row, rows_in_plane, 0)  % simulaation aloitus
-
-
-
-
+heatmap(odotus)
 %
 %% Funkkarit
+
+
+% This function makes simulation of random order for plane of rows*seats n
+% times. It makes histogram and heatmap of the results
+function time = makeRandomSimulation(seats, rows, n)
+    
+    line = [1:1:seats*rows]';       % generoitu jono
+
+    tic
+
+    time = [];
+    odotus=[];
+    for i = 1:n
+
+        line = line(randperm(length(line)));       % Talla komennolla saa
+                                                % randomoitua jarjestyksen
+        [time(i), odotus(i,:,:)] = planeBoarding(line,...
+                                                seats,...
+                                                rows, 0);  
+                                            % simulaation aloitus
+    end
+    histogram(time)
+    title('Random')
+    m = mean(time);
+    subtitle(['Mean: ',num2str(m,'%.2f')])
+    toc
+                                     % randomoitua jarjestyksen
+    figure
+    xmean = mean(odotus,1);
+    xmean = squeeze(xmean);
+    heatmap(xmean)
+end
+
+
+
 
 function [time, varargout] = planeBoarding(line, seats, rows, test) 
     % setuppia
