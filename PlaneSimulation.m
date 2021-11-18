@@ -1,27 +1,103 @@
 %% PlaneSimulation
 clc
 
+%%%%%%%%%%%%%%%%%% Testit %%%%%%%%%%%%%%%%%%%%%%%
 tests = [3 5 1 3 2 3];
 l = size(tests,1);
 ev = [7];
-
 testRes = runTestCase(tests, ev);
-disp("Testeistä meni läpi: "+ testRes +" / "+ l + " (" + (testRes/l)*100 +"%)")
+disp("Testeista meni lapi: "+ testRes +" / "+ l + " (" + (testRes/l)*100 +"%)")
 
-t_step = 1;
-seats_in_row = 6;                     % Penkkien maara rivilla (parillinen)
-rows_in_plane = 20;                   % Rivien maara koneessa 
+%%%%%%%%%%%%%%%%% Asetukset %%%%%%%%%%%%%%%%%%%%%
+t_step = 1;         % Simulaatiokierroksen aika-askel
+
+seats_in_row = 6;   % Penkkien maara rivilla (parillinen)
+
+rows_in_plane = 20; % Rivien maara koneessa
+
+rand_state = 3;   % Luo simulaation satunnaisuuden valinnan mukaan
+                        % 0 = ei satunnaisuutta, aikaa EI kulu laukkujen
+                        % laittamiseen
+                        % 1 = ei satunnaisuutta, vakioaikainen t ~= 0
+                        % 2 = tasajakauma satunnaisuudelle
+                        % 3 = betajakauma satunnaisuudelle
+                        
+const_time = 1*t_step;  % YM vaihtoehdon 1 vakioaika
+
+% asetuksien sisallytys structiin:
+settings = struct;
+settings.t_step = t_step;
+settings.seats_in_row = seats_in_row;
+settings.rows_in_plane = rows_in_plane;
+settings.rand_state = rand_state;
+settings.const_time = const_time;
+%%%%%%%%%%%%%%%%%% Jonoasetukset %%%%%%%%%%%%%%%%
+% Tanne voi laittaa kaikki koodit, joilla rakennetaan simuloitavat
+% tapaukset. 1 SARAKE on simuloitava jono!
 
 line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
 
-line = line(randperm(length(line)));       % Talla komennolla saa
+line1 = line(randperm(length(line)));     % Talla komennolla saa
                                             % randomoitua jarjestyksen
                                             
-random = randi([0, t_step*20], length(line),1);
-time = planeBoarding(line, seats_in_row, rows_in_plane,t_step,random)  % simulaation aloitus
+line2 = line(randperm(length(line)));     % Talla komennolla saa
+                                            % randomoitua jarjestyksen
+lines = [line1, line1];
+                                            
+%%%%%%%%%%%%%%%%%% Simulaation suoritus %%%%%%%%%
+[times] = simulation(lines, settings)      % simulaation aloitus
 
+% Tama suoritetaan simulaatioiden jalkeen:
+
+
+%
 
 %% Funkkarit
+
+% Funktio simulaation ajamiselle ylla olevilla asetuksilla
+function [times varargout] = simulation(lines, settings);
+    % yksittaisten simulaatioiden ajat sisaltava vektori
+    times = [];
+    nOfSims = size(lines, 2)
+    
+    % asetuksien purku
+    seats = settings.seats_in_row;
+    rows = settings.rows_in_plane;
+    t_step = settings.t_step;
+    rand_state = settings.rand_state;
+    const_time = settings.const_time;
+    %
+    
+    for (i = 1:nOfSims)
+        % otetaan simuloitava jono irti matriisista
+        line = lines(:, i);
+        
+        % Maaritetaan yksiloiden ajankaytto asetuksen mukaan
+        switch rand_state
+            case 1
+                rand_times = const_time*ones(length(line),1);
+            case 2
+                rand_times = randi([0, t_step*20], length(line), 1);
+            case 3
+                % Beta-jakauman parametrit:
+                alpha = 2;
+                beta = 5;
+                absmax = 20;
+                %
+                rand_times = floor(absmax*betarnd(alpha,beta,length(line),1));
+            otherwise
+                rand_times = zeros(length(line),1);
+        end
+        % otetaan halutut ulostulot yksittaisesta simulaatiosta
+        [time] = planeBoarding(line, seats, rows, t_step, rand_times);  % simulaation aloitus
+        % asetetaan aika vektoriin
+        times(end + 1) = time;
+    end
+    
+    % Taalta saa kaikeken varargout vektorin kautta pihalle simulaatioiden jalkeen
+    
+    %
+end
 
 function time = planeBoarding(line, seats, rows, varargin)
     switch nargin
@@ -60,7 +136,7 @@ function time = planeBoarding(line, seats, rows, varargin)
                     if (odotus(i, 1) == 0)
                         odotus(i, 1) = 1;
                         odotus(i, 2) = determineTime(time_step, person, plane(i, :));
-                    elseif (odotus(i, :) == [1, 0])
+                    elseif (odotus(i, (1:2)) == [1, 0])
                         plane(person(1), person(2)) = indToSeat(person, seats);
                         aisle(i,:) = zeros(1,size(aisle,2));
                         odotus(i, :) = zeros(1,size(odotus,2));
@@ -88,9 +164,17 @@ function time = planeBoarding(line, seats, rows, varargin)
             time = time + time_step;
             aisle;
             odotus;
+            
+            % Tama suoritetaan jokaisen while-kierroksen jalkeen:
+            
+            %
         end
     end
     plane;
+    % Tama suoritetaan jokaisen simulaation jalkeen:
+    % ulos saa tavaraaa varargout vektorin avulla:
+    
+    %
 end
 
 function wait_time = determineTime(time_step, person, row)
@@ -120,7 +204,7 @@ function wait_time = determineTime(time_step, person, row)
         window = 1;
         increment = -1;
     end
-    % Lasketaan aika mikä menee istumiseen
+    % Lasketaan aika mik?? menee istumiseen
     for i = aisle:increment:window
         if (i == person(2))
             % henkilon istuuntumisaika
@@ -152,9 +236,9 @@ function N = indToSeat(V, cn)
     N = N(1);
 end
 
-% Ottaa sisään matriisin testejä
+% Ottaa sis????n matriisin testej??
 % Jokainen rivi on yksi testi
-% tests, sisältää planeBoarding parametrit.
+% tests, sis??lt???? planeBoarding parametrit.
 function pass = runTestCase(tests, expectedOutcomes)
     pass = 0;
     for i = 1:size(tests,1)
@@ -163,7 +247,7 @@ function pass = runTestCase(tests, expectedOutcomes)
         param1 = tests(1,2:n);
         param2 = tests(end-1);
         param3 = tests(end);
-        time = planeBoarding(param1', param2, param3,1)
+        time = planeBoarding(param1', param2, param3,1);
         
         if (expectedOutcomes(i) == time)
             pass = pass + 1;
