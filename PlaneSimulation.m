@@ -16,10 +16,10 @@ line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
 
 line = line(randperm(length(line)));       % Talla komennolla saa
                                             % randomoitua jarjestyksen
+                                            
 random = randi([0, t_step*20], length(line),1);
 time = planeBoarding(line, seats_in_row, rows_in_plane,t_step,random)  % simulaation aloitus
 
-% fixed. 
 
 %% Funkkarit
 
@@ -45,7 +45,7 @@ function time = planeBoarding(line, seats, rows, varargin)
     lineIn(:,3) = random';
     % Main Run: Kaydaan lapi niin kauan kun joko jonossa tai kaytavalla on
     % ihmisia.
-    if (mod(seats, 2) == 0)
+    if (mod(seats, 2) == 0);
         while (any(any(lineIn)) || any(any(aisle)))
             % Kaydaan lapi kaytava alkaen koneen lopusta
             for i = rows:-1:1
@@ -60,13 +60,13 @@ function time = planeBoarding(line, seats, rows, varargin)
                     if (odotus(i, 1) == 0)
                         odotus(i, 1) = 1;
                         odotus(i, 2) = determineTime(time_step, person, plane(i, :));
-                    elseif (odotus(i,(1:2)) == [1 0])
+                    elseif (odotus(i, :) == [1, 0])
                         plane(person(1), person(2)) = indToSeat(person, seats);
                         aisle(i,:) = zeros(1,size(aisle,2));
                         odotus(i, :) = zeros(1,size(odotus,2));
                     end
-                elseif(i ~= rows)
-                    if (aisle(i + 1, 1) == 0)
+                elseif((i ~= rows) && (person(1) ~= 0))
+                    if (aisle(i + 1, 1) == 0);
                     % - Jos han ei ole oikealla rivilla -> siirretaan eteenpain
                     % - Siirretaan henkilo eteenpain
                         aisle(i+1,:) = person;
@@ -81,11 +81,11 @@ function time = planeBoarding(line, seats, rows, varargin)
                 aisle(1,:) = lineIn(1,:);
                 lineIn(1,:) = [];
             end
+
             % poistetaan odotusaika jokaiselta rivilta:
             odotus(:,2) = odotus(:,2) - (odotus(:,2) > 0);
             % kasvatetaan kulunutta aikaa ja kierrosmaaraa
             time = time + time_step;
-
             aisle;
             odotus;
         end
@@ -97,9 +97,6 @@ function wait_time = determineTime(time_step, person, row)
 % Laskee ajan istuuntumiselle, riippuen satunnaisuudesta, istumapaikasta ja rivin tayteydesta
     seating_time = 0;
     stowing_time = person(3);
-    % Satunnainen aika, joka matkatavaroiden laittamiseen kuluu
-    % aika-askel - 20*aika_askel
-
     % Istuuntumisaika lasketaan seuraavasti:
     % etaisyys kaytavasta * aika askel
     % Mikali toiset ihmiset ovat edessa:
@@ -109,9 +106,11 @@ function wait_time = determineTime(time_step, person, row)
     % Taman funktion pitaisi tuottaa ym logiikalla jokaiselle rivikoolle
     % oikea etaisyys:
     % esim 3 + 3 penkkia, niin paikka 1 on 3 etaisyydella kaytavasta
-    time_fun = @(x) (abs(seatsOnSide + 0.5 - x) + 0.5)*time_step;
+    % Korjattu s.e. jono voi liikkua nopeemmin kun henkilot menevat
+    % istumaan.
+    time_fun = @(x) (abs(seatsOnSide + 0.5 - x) + 0.5)*time_step + 1;
     
-    % Määritetään kummalla puolella henkilö istuu
+    % Maaritetaan kummalla puolella henkil?? istuu
     if (person(2) > seatsOnSide)
         aisle = seatsOnSide + 1;
         window = seatsOnSide* 2;
@@ -125,13 +124,16 @@ function wait_time = determineTime(time_step, person, row)
     for i = aisle:increment:window
         if (i == person(2))
             % henkilon istuuntumisaika
-            seating_time = seating_time + time_fun(i);
+            seating_time = seating_time + time_step;
             break;
-        elseif ( row(i) )
-            % Jos joku istuu välissä istumisenprosessin kestoa
-            seating_time = seating_time + 2*time_fun(i);
+        elseif ((row(i) ~= 0))
+            % Jos joku istuu valissa istumisenprosessin kestoa
+            seating_time = seating_time + time_fun(i);
         end
     end
+    % Testiprinttei
+    person;
+    row;
     seating_time;
     % kokonaisaika tulee naiden summana:
     wait_time = stowing_time + seating_time;
