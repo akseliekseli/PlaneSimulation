@@ -4,7 +4,7 @@ clc
 %%%%%%%%%%%%%%%%%% Testit %%%%%%%%%%%%%%%%%%%%%%%
 tests = [3 5 1 3 2 3];
 l = size(tests,1);
-ev = [7];
+ev = [5];
 testRes = runTestCase(tests, ev);
 disp("Testeista meni lapi: "+ testRes +" / "+ l + " (" + (testRes/l)*100 +"%)")
 
@@ -136,7 +136,8 @@ function time = planeBoarding(line, seats, rows, varargin)
                     if (odotus(i, 1) == 0)
                         odotus(i, 1) = 1;
                         odotus(i, 2) = determineTime(time_step, person, plane(i, :));
-                    elseif (odotus(i, (1:2)) == [1, 0])
+                    end
+                    if (odotus(i, (1:2)) == [1, 0])
                         plane(person(1), person(2)) = indToSeat(person, seats);
                         aisle(i,:) = zeros(1,size(aisle,2));
                         odotus(i, :) = zeros(1,size(odotus,2));
@@ -187,13 +188,10 @@ function wait_time = determineTime(time_step, person, row)
     % jokainen edessa oleva nousee ja istuuntuu takaisin:
     % + 2 * ylempi (jokaista henkiloa kohden)
     seatsOnSide = length(row)/2;
-    % Taman funktion pitaisi tuottaa ym logiikalla jokaiselle rivikoolle
-    % oikea etaisyys:
-    % esim 3 + 3 penkkia, niin paikka 1 on 3 etaisyydella kaytavasta
-    % Korjattu s.e. jono voi liikkua nopeemmin kun henkilot menevat
-    % istumaan.
+    % Funktiolla tuotetaan odotusaika, kun edessa olevat ihmiset poistuvat
+    % paikaltaan ja palaavat takaisin istumaan:
+    % ikkuna = ei estoa, Kaytava = 3, Keskipaikka = 4, Molemmat = 5
     time_fun = @(x) (abs(seatsOnSide + 0.5 - x) + 0.5)*time_step + 1;
-    
     % Maaritetaan kummalla puolella henkil?? istuu
     if (person(2) > seatsOnSide)
         aisle = seatsOnSide + 1;
@@ -207,8 +205,7 @@ function wait_time = determineTime(time_step, person, row)
     % Lasketaan aika mik?? menee istumiseen
     for i = aisle:increment:window
         if (i == person(2))
-            % henkilon istuuntumisaika
-            seating_time = seating_time + time_step;
+            % Lopetetaan estavien ihmisten tarkastelu
             break;
         elseif ((row(i) ~= 0))
             % Jos joku istuu valissa istumisenprosessin kestoa
