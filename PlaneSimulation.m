@@ -15,7 +15,7 @@ seats_in_row = 6;   % Penkkien maara rivilla (parillinen)
 
 rows_in_plane = 20; % Rivien maara koneessa
 
-rand_state = 3;   % Luo simulaation satunnaisuuden valinnan mukaan
+rand_state = 0;   % Luo simulaation satunnaisuuden valinnan mukaan
                         % 0 = ei satunnaisuutta, aikaa EI kulu laukkujen
                         % laittamiseen
                         % 1 = ei satunnaisuutta, vakioaikainen t ~= 0
@@ -34,22 +34,31 @@ settings.const_time = const_time;
 %%%%%%%%%%%%%%%%%% Jonoasetukset %%%%%%%%%%%%%%%%
 % Tanne voi laittaa kaikki koodit, joilla rakennetaan simuloitavat
 % tapaukset. 1 SARAKE on simuloitava jono!
+numberOfSims = 100;
 
+lines = [];
 line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
 
-line1 = line(randperm(length(line)));     % Talla komennolla saa
-                                            % randomoitua jarjestyksen
-                                            
-line2 = line(randperm(length(line)));     % Talla komennolla saa
-                                            % randomoitua jarjestyksen
-lines = [line1, line1];
+for (i = 1:numberOfSims)
+    lines(:, end+1) = line(randperm(length(line)));     % Talla komennolla saa
+end                                                     % randomoitua jarjestyksen
+
                                             
 %%%%%%%%%%%%%%%%%% Simulaation suoritus %%%%%%%%%
-[times] = simulation(lines, settings)      % simulaation aloitus
+tic
+[times, waittimes] = simulation(lines, settings);      % simulaation aloitus
+toc
 
 % Tama suoritetaan simulaatioiden jalkeen:
+m = mean(times);
+histogram(times)
+title('Random')
+% subtitle(['Mean: ',num2str(m,'%.2f')])
 
-
+figure
+xmean = mean(waittimes, 3);
+% xmean = squeeze(xmean);
+heatmap(xmean);
 %
 
 %% Funkkarit
@@ -58,6 +67,7 @@ lines = [line1, line1];
 function [times varargout] = simulation(lines, settings);
     % yksittaisten simulaatioiden ajat sisaltava vektori
     times = [];
+    waittimes = [];
     nOfSims = size(lines, 2)
     
     % asetuksien purku
@@ -68,38 +78,38 @@ function [times varargout] = simulation(lines, settings);
     const_time = settings.const_time;
     %
     
-    for (i = 1:nOfSims)
+    for (i = 1:1:nOfSims)
         % otetaan simuloitava jono irti matriisista
         line = lines(:, i);
         
         % Maaritetaan yksiloiden ajankaytto asetuksen mukaan
         switch rand_state
             case 1
-                rand_times = const_time*ones(length(line),1);
+                rand_times = t_step*const_time.*ones(length(line),1);
             case 2
                 rand_times = randi([0, t_step*20], length(line), 1);
             case 3
                 % Beta-jakauman parametrit:
                 alpha = 2;
                 beta = 5;
-                absmax = 20;
+                absmax = t_step*20;
                 %
                 rand_times = floor(absmax*betarnd(alpha,beta,length(line),1));
             otherwise
                 rand_times = zeros(length(line),1);
         end
         % otetaan halutut ulostulot yksittaisesta simulaatiosta
-        [time] = planeBoarding(line, seats, rows, t_step, rand_times);  % simulaation aloitus
+        [time odotus] = planeBoarding(line, seats, rows, t_step, rand_times);  % simulaation aloitus
         % asetetaan aika vektoriin
-        times(end + 1) = time;
+        times(i) = time;
+        waittimes(:,:,i) = odotus;
     end
-    
     % Taalta saa kaikeken varargout vektorin kautta pihalle simulaatioiden jalkeen
-    
+    varargout{1} = waittimes;
     %
 end
 
-function time = planeBoarding(line, seats, rows, varargin)
+function [time varargout] = planeBoarding(line, seats, rows, varargin)
     switch nargin
         case 5
             time_step = varargin{1};
@@ -116,6 +126,7 @@ function time = planeBoarding(line, seats, rows, varargin)
     plane = zeros(rows, seats);
     aisle = zeros(rows, 3);
     odotus = zeros(rows, 3);
+    wait_map = plane;
     % Muunnetaan jono vektori sisaltamaan indeksit
     lineIn = seatToInd(line, seats);
     lineIn(:,3) = random';
@@ -136,6 +147,8 @@ function time = planeBoarding(line, seats, rows, varargin)
                     if (odotus(i, 1) == 0)
                         odotus(i, 1) = 1;
                         odotus(i, 2) = determineTime(time_step, person, plane(i, :));
+                        wait_map(person(1),person(2)) = wait_map(person(1),person(2))...
+                                                    + odotus(i,2);
                     end
                     if (odotus(i, (1:2)) == [1, 0])
                         plane(person(1), person(2)) = indToSeat(person, seats);
@@ -149,6 +162,10 @@ function time = planeBoarding(line, seats, rows, varargin)
                         aisle(i+1,:) = person;
                         aisle(i,:) = zeros(1,size(aisle,2));
                     end
+                    % veikkaisin, ett? tama olisi oikea kohta ks.
+                    % lisaykselle
+                    wait_map(person(1),person(2)) = wait_map(person(1),person(2))...
+                                                               +time_step;
                 end
             end
             % Jos kaytavan ensimmainen paikka on tyhja niin jonottaja ulkoa
@@ -159,19 +176,22 @@ function time = planeBoarding(line, seats, rows, varargin)
                 lineIn(1,:) = [];
             end
 
-            % poistetaan odotusaika jokaiselta rivilta:
-            odotus(:,2) = odotus(:,2) - (odotus(:,2) > 0);
+            % poistetaan time_step odotusajasta jokaiselta odottavalta rivilta:
+            odotus(:,2) = odotus(:,2) - time_step*(odotus(:,1) == 1);
+            % muutetaan kaikki negatiiviset ajat nolliksi
+            odotus(:,2) = (odotus(:,2) > 0).*odotus(:,2);
             % kasvatetaan kulunutta aikaa ja kierrosmaaraa
             time = time + time_step;
             aisle;
             odotus;
             
             % Tama suoritetaan jokaisen while-kierroksen jalkeen:
-            
+            varargout{1} = wait_map;
             %
         end
     end
     plane;
+    time = time/time_step;
     % Tama suoritetaan jokaisen simulaation jalkeen:
     % ulos saa tavaraaa varargout vektorin avulla:
     
