@@ -1,4 +1,5 @@
 %% PlaneSimulation
+<<<<<<< HEAD
 clc, clearvars, close all
 % testRes = runTestCase();
 % if (testRes ~= 1)
@@ -28,9 +29,13 @@ time = makeRandomSimulation(seats, rows,n);
                                rows, 0);  
 figure
 heatmap(odotus)
+=======
+clc
 %
+
 %% Funkkarit
 
+<<<<<<< HEAD
 
 % This function makes simulation of random order for plane of rows*seats n
 % times. It makes histogram and heatmap of the results
@@ -67,18 +72,24 @@ end
 
 
 function [time, varargout] = planeBoarding(line, seats, rows, test) 
+=======
     % setuppia
     time = 0;
     round = 0;
     time_step = 1; % jokaisen kierroksen kuluttama aikayksikk?
     plane = zeros(rows, seats);
+<<<<<<< HEAD
     wait_map = plane;
     aisle = zeros(rows, 2);
     odotus = zeros(rows, 2);
+=======
+>>>>>>> main
     % Muunnetaan jono vektori sisaltamaan indeksit
     lineIn = seatToInd(line, seats);
     
     % Main Run: kaydaann lapi niin kauan kun joko jonossa tai kaytavalla on
+    lineIn(:,3) = random';
+    % Main Run: Kaydaan lapi niin kauan kun joko jonossa tai kaytavalla on
     % ihmisia.
     if (mod(seats, 2) == 0);
         while (any(any(lineIn)) || any(any(aisle)));
@@ -97,21 +108,30 @@ function [time, varargout] = planeBoarding(line, seats, rows, test)
                         odotus(i, 2) = determineTime(time_step, person, plane(i, :));
                         wait_map(person(1),person(2)) = wait_map(person(1),person(2))...
                                                     + odotus(i,2);
+<<<<<<< HEAD
                     elseif (odotus(i, :) == [1, 0]);
+=======
+>>>>>>> main
                         plane(person(1), person(2)) = indToSeat(person, seats);
                         aisle(i,:) = [0, 0];
                         odotus(i, :) = [0, 0];
                     end
+<<<<<<< HEAD
                 elseif((i ~= rows) && (person(1)~=0))
+=======
+>>>>>>> main
                     if (aisle(i + 1, 1) == 0);
                     % - Jos han ei ole oikealla rivilla -> siirretaan eteenpain
                     % - Siirretaan henkilo eteenpain
                         aisle(i+1,:) = person;
+<<<<<<< HEAD
                         aisle(i,:) = [0, 0];
                         person;
                         % TODO Person on (0, 0), joten indexöinti ei toimi?
                         wait_map(person(1),person(2)) = wait_map(person(1),person(2))...
                                                                +time_step;
+=======
+>>>>>>> main
                     end
                 end
             end
@@ -127,6 +147,7 @@ function [time, varargout] = planeBoarding(line, seats, rows, test)
             odotus(:,2) = odotus(:,2) - (odotus(:,2) > 0);
             % kasvatetaan kulunutta aikaa ja kierrosmaaraa
             time = time + time_step;
+<<<<<<< HEAD
             round = round + 1;
 
             % Algoritmin testauksen toimivuutta varten:
@@ -140,6 +161,8 @@ function [time, varargout] = planeBoarding(line, seats, rows, test)
                 end
             end
             
+=======
+>>>>>>> main
             aisle;
             odotus;
         end
@@ -151,12 +174,15 @@ end
 function wait_time = determineTime(time_step, person, row);
 % Laskee ajan istuuntumiselle, riippuen satunnaisuudesta, istumapaikasta ja rivin tayteydesta
     seating_time = 0;
+<<<<<<< HEAD
     stowing_time = 0;
     % Satunnainen aika, joka matkatavaroiden laittamiseen kuluu
     % aika-askel - 20*aika_askel
     stowing_time = randi([0, 0*time_step*20]);
     % istuuntumisaika lasketaan esim: seuraavasti
     % et?isyys kaytavasta * aika asekel
+=======
+>>>>>>> main
     % Mikali toiset ihmiset ovat edessa:
     % jokainen edessa oleva nousee ja istuuntuu takaisin:
     % + 2 * ylempi (jokaista henkiloa kohden)
