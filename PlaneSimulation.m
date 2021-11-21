@@ -1,139 +1,79 @@
 %% PlaneSimulation
-clc
+clc, clearvars, close all
 
-%%%%%%%%%%%%%%%%%% Testit %%%%%%%%%%%%%%%%%%%%%%%
-tests = [3 5 1 3 2 3];
-l = size(tests,1);
-ev = [5];
-testRes = runTestCase(tests, ev);
-disp("Testeista meni lapi: "+ testRes +" / "+ l + " (" + (testRes/l)*100 +"%)")
 
-%%%%%%%%%%%%%%%%% Asetukset %%%%%%%%%%%%%%%%%%%%%
-t_step = 1;         % Simulaatiokierroksen aika-askel
 
-seats_in_row = 6;   % Penkkien maara rivilla (parillinen)
+time = makeRandomSimulation(seats, rows,n);
 
-rows_in_plane = 20; % Rivien maara koneessa
-
-rand_state = 0;   % Luo simulaation satunnaisuuden valinnan mukaan
-                        % 0 = ei satunnaisuutta, aikaa EI kulu laukkujen
-                        % laittamiseen
-                        % 1 = ei satunnaisuutta, vakioaikainen t ~= 0
-                        % 2 = tasajakauma satunnaisuudelle
-                        % 3 = betajakauma satunnaisuudelle
-                        
-const_time = 1*t_step;  % YM vaihtoehdon 1 vakioaika
-
-% asetuksien sisallytys structiin:
-settings = struct;
-settings.t_step = t_step;
-settings.seats_in_row = seats_in_row;
-settings.rows_in_plane = rows_in_plane;
-settings.rand_state = rand_state;
-settings.const_time = const_time;
-%%%%%%%%%%%%%%%%%% Jonoasetukset %%%%%%%%%%%%%%%%
-% Tanne voi laittaa kaikki koodit, joilla rakennetaan simuloitavat
-% tapaukset. 1 SARAKE on simuloitava jono!
-numberOfSims = 100;
-
-lines = [];
-line = [1:1:seats_in_row*rows_in_plane]';       % generoitu jono
-
-for (i = 1:numberOfSims)
-    lines(:, end+1) = line(randperm(length(line)));     % Talla komennolla saa
-end                                                     % randomoitua jarjestyksen
-
-                                            
-%%%%%%%%%%%%%%%%%% Simulaation suoritus %%%%%%%%%
-tic
-[times, waittimes] = simulation(lines, settings);      % simulaation aloitus
-toc
-
-% Tama suoritetaan simulaatioiden jalkeen:
-m = mean(times);
-histogram(times)
-title('Random')
-% subtitle(['Mean: ',num2str(m,'%.2f')])
-
+[time, odotus] = planeBoarding(line',...
+                               seats,...
+                               rows, 0);  
 figure
-xmean = mean(waittimes, 3);
-% xmean = squeeze(xmean);
-heatmap(xmean);
+heatmap(odotus)
+=======
+clc
 %
 
 %% Funkkarit
 
-% Funktio simulaation ajamiselle ylla olevilla asetuksilla
-function [times varargout] = simulation(lines, settings);
-    % yksittaisten simulaatioiden ajat sisaltava vektori
-    times = [];
-    waittimes = [];
-    nOfSims = size(lines, 2)
+<<<<<<< HEAD
+
+% This function makes simulation of random order for plane of rows*seats n
+% times. It makes histogram and heatmap of the results
+function time = makeRandomSimulation(seats, rows, n)
     
-    % asetuksien purku
-    seats = settings.seats_in_row;
-    rows = settings.rows_in_plane;
-    t_step = settings.t_step;
-    rand_state = settings.rand_state;
-    const_time = settings.const_time;
-    %
-    
-    for (i = 1:1:nOfSims)
-        % otetaan simuloitava jono irti matriisista
-        line = lines(:, i);
-        
-        % Maaritetaan yksiloiden ajankaytto asetuksen mukaan
-        switch rand_state
-            case 1
-                rand_times = t_step*const_time.*ones(length(line),1);
-            case 2
-                rand_times = randi([0, t_step*20], length(line), 1);
-            case 3
-                % Beta-jakauman parametrit:
-                alpha = 2;
-                beta = 5;
-                absmax = t_step*20;
-                %
-                rand_times = floor(absmax*betarnd(alpha,beta,length(line),1));
-            otherwise
-                rand_times = zeros(length(line),1);
-        end
-        % otetaan halutut ulostulot yksittaisesta simulaatiosta
-        [time odotus] = planeBoarding(line, seats, rows, t_step, rand_times);  % simulaation aloitus
-        % asetetaan aika vektoriin
-        times(i) = time;
-        waittimes(:,:,i) = odotus;
+    line = [1:1:seats*rows]';       % generoitu jono
+
+    tic
+
+    time = [];
+    odotus=[];
+    for i = 1:n
+
+        line = line(randperm(length(line)));       % Talla komennolla saa
+                                                % randomoitua jarjestyksen
+        [time(i), odotus(i,:,:)] = planeBoarding(line,...
+                                                seats,...
+                                                rows, 0);  
+                                            % simulaation aloitus
     end
-    % Taalta saa kaikeken varargout vektorin kautta pihalle simulaatioiden jalkeen
-    varargout{1} = waittimes;
-    %
+    histogram(time)
+    title('Random')
+    m = mean(time);
+    subtitle(['Mean: ',num2str(m,'%.2f')])
+    toc
+                                     % randomoitua jarjestyksen
+    figure
+    xmean = mean(odotus,1);
+    xmean = squeeze(xmean);
+    heatmap(xmean)
 end
 
-function [time varargout] = planeBoarding(line, seats, rows, varargin)
-    switch nargin
-        case 5
-            time_step = varargin{1};
-            random = varargin{2};
-        case 4
-            time_step = varargin{1};
-            random = zeros(rows,1);
-        otherwise
-            time_step = 1;
-            random = zeros(rows,1);
-    end
+
+
+
+function [time, varargout] = planeBoarding(line, seats, rows, test) 
+=======
     % setuppia
     time = 0;
+    round = 0;
+    time_step = 1; % jokaisen kierroksen kuluttama aikayksikk?
     plane = zeros(rows, seats);
-    aisle = zeros(rows, 3);
-    odotus = zeros(rows, 3);
+<<<<<<< HEAD
     wait_map = plane;
+    aisle = zeros(rows, 2);
+    odotus = zeros(rows, 2);
+=======
+>>>>>>> main
     % Muunnetaan jono vektori sisaltamaan indeksit
     lineIn = seatToInd(line, seats);
+    
+    % Main Run: kaydaann lapi niin kauan kun joko jonossa tai kaytavalla on
     lineIn(:,3) = random';
     % Main Run: Kaydaan lapi niin kauan kun joko jonossa tai kaytavalla on
     % ihmisia.
     if (mod(seats, 2) == 0);
-        while (any(any(lineIn)) || any(any(aisle)))
+        while (any(any(lineIn)) || any(any(aisle)));
             % Kaydaan lapi kaytava alkaen koneen lopusta
             for i = rows:-1:1
                 person = aisle(i,:);
@@ -144,28 +84,36 @@ function [time varargout] = planeBoarding(line, seats, rows, varargin)
                     % ei ole jo valmis.
                     % - Asetetaan henkilo paikalleen
                     % - Poistetaan henkilo kaytavalta
-                    if (odotus(i, 1) == 0)
+                    if (odotus(i, 1) == 0);
                         odotus(i, 1) = 1;
                         odotus(i, 2) = determineTime(time_step, person, plane(i, :));
                         wait_map(person(1),person(2)) = wait_map(person(1),person(2))...
                                                     + odotus(i,2);
-                    end
-                    if (odotus(i, (1:2)) == [1, 0])
+<<<<<<< HEAD
+                    elseif (odotus(i, :) == [1, 0]);
+=======
+>>>>>>> main
                         plane(person(1), person(2)) = indToSeat(person, seats);
-                        aisle(i,:) = zeros(1,size(aisle,2));
-                        odotus(i, :) = zeros(1,size(odotus,2));
+                        aisle(i,:) = [0, 0];
+                        odotus(i, :) = [0, 0];
                     end
-                elseif((i ~= rows) && (person(1) ~= 0))
+<<<<<<< HEAD
+                elseif((i ~= rows) && (person(1)~=0))
+=======
+>>>>>>> main
                     if (aisle(i + 1, 1) == 0);
                     % - Jos han ei ole oikealla rivilla -> siirretaan eteenpain
                     % - Siirretaan henkilo eteenpain
                         aisle(i+1,:) = person;
-                        aisle(i,:) = zeros(1,size(aisle,2));
-                    end
-                    % veikkaisin, ett? tama olisi oikea kohta ks.
-                    % lisaykselle
-                    wait_map(person(1),person(2)) = wait_map(person(1),person(2))...
+<<<<<<< HEAD
+                        aisle(i,:) = [0, 0];
+                        person;
+                        % TODO Person on (0, 0), joten indexöinti ei toimi?
+                        wait_map(person(1),person(2)) = wait_map(person(1),person(2))...
                                                                +time_step;
+=======
+>>>>>>> main
+                    end
                 end
             end
             % Jos kaytavan ensimmainen paikka on tyhja niin jonottaja ulkoa
@@ -176,42 +124,57 @@ function [time varargout] = planeBoarding(line, seats, rows, varargin)
                 lineIn(1,:) = [];
             end
 
-            % poistetaan time_step odotusajasta jokaiselta odottavalta rivilta:
-            odotus(:,2) = odotus(:,2) - time_step*(odotus(:,1) == 1);
-            % muutetaan kaikki negatiiviset ajat nolliksi
-            odotus(:,2) = (odotus(:,2) > 0).*odotus(:,2);
+            % poistetaan odotusaika jokaiselta rivilta:
+            odotus(:,2) = odotus(:,2) - (odotus(:,2) > 0);
             % kasvatetaan kulunutta aikaa ja kierrosmaaraa
             time = time + time_step;
+<<<<<<< HEAD
+            round = round + 1;
+
+            % Algoritmin testauksen toimivuutta varten:
+            if (test == 1)
+                time = round;
+                odotus = [ones(rows, 1), zeros(rows, 1)];
+                if (round == 3)
+                    varargout{1} = aisle(:,1);
+                elseif (round == 4)
+                    varargout{2} = plane(:,1);
+                end
+            end
+            
+=======
+>>>>>>> main
             aisle;
             odotus;
-            
-            % Tama suoritetaan jokaisen while-kierroksen jalkeen:
-            varargout{1} = wait_map;
-            %
         end
     end
+    varargout{1} = wait_map;
     plane;
-    time = time/time_step;
-    % Tama suoritetaan jokaisen simulaation jalkeen:
-    % ulos saa tavaraaa varargout vektorin avulla:
-    
-    %
 end
 
-function wait_time = determineTime(time_step, person, row)
+function wait_time = determineTime(time_step, person, row);
 % Laskee ajan istuuntumiselle, riippuen satunnaisuudesta, istumapaikasta ja rivin tayteydesta
     seating_time = 0;
-    stowing_time = person(3);
-    % Istuuntumisaika lasketaan seuraavasti:
-    % etaisyys kaytavasta * aika askel
+<<<<<<< HEAD
+    stowing_time = 0;
+    % Satunnainen aika, joka matkatavaroiden laittamiseen kuluu
+    % aika-askel - 20*aika_askel
+    stowing_time = randi([0, 0*time_step*20]);
+    % istuuntumisaika lasketaan esim: seuraavasti
+    % et?isyys kaytavasta * aika asekel
+=======
+>>>>>>> main
     % Mikali toiset ihmiset ovat edessa:
     % jokainen edessa oleva nousee ja istuuntuu takaisin:
     % + 2 * ylempi (jokaista henkiloa kohden)
     seatsOnSide = length(row)/2;
-    % Funktiolla tuotetaan odotusaika, kun edessa olevat ihmiset poistuvat
-    % paikaltaan ja palaavat takaisin istumaan:
-    % ikkuna = ei estoa, Kaytava = 3, Keskipaikka = 4, Molemmat = 5
+    % Taman funktion pitaisi tuottaa ym logiikalla jokaiselle rivikoolle
+    % oikea etaisyys:
+    % esim 3 + 3 penkkia, niin paikka 1 on 3 etaisyydella kaytavasta
+    % Korjattu s.e. jono voi liikkua nopeemmin kun henkilot menevat
+    % istumaan.
     time_fun = @(x) (abs(seatsOnSide + 0.5 - x) + 0.5)*time_step + 1;
+    
     % Maaritetaan kummalla puolella henkil?? istuu
     if (person(2) > seatsOnSide)
         aisle = seatsOnSide + 1;
@@ -222,12 +185,14 @@ function wait_time = determineTime(time_step, person, row)
         window = 1;
         increment = -1;
     end
-    % Lasketaan aika mik?? menee istumiseen
+    % Lasketaan aika mika  menee istumiseen
+    blocking = 1;
     for i = aisle:increment:window
         if (i == person(2))
-            % Lopetetaan estavien ihmisten tarkastelu
-            break;
-        elseif ((row(i) ~= 0))
+            % henkilon istuuntumisaika
+            seating_time = seating_time + time_step;
+            blocking = 0;
+        elseif ((row(i) ~= 0) && (blocking == 1))
             % Jos joku istuu valissa istumisenprosessin kestoa
             seating_time = seating_time + time_fun(i);
         end
@@ -240,34 +205,36 @@ function wait_time = determineTime(time_step, person, row)
     wait_time = stowing_time + seating_time;
 end
 
-function I = seatToInd(L, cn)
+function I = seatToInd(L, cn);
 % Converts the vector of seat numbers into a 2-dimensional vector of indeces.
     R = ceil(L./cn);     % Counts the row in plane from the seat number [1, n]
     C = mod(L-1, cn)+1;  % Counts the row position from the seat number [1, 6]
     I = [R, C];
 end
 
-function N = indToSeat(V, cn)
+function N = indToSeat(V, cn);
 % Converts the vector of indeces into a 1-dimensional vector of seat numbers.
     N = (V(:,1) - 1)*cn + V(:,2);  % Counts the seat number from given indices
     N = N(1);
 end
 
-% Ottaa sis????n matriisin testej??
-% Jokainen rivi on yksi testi
-% tests, sis??lt???? planeBoarding parametrit.
-function pass = runTestCase(tests, expectedOutcomes)
-    pass = 0;
-    for i = 1:size(tests,1)
-        pituus = tests(i,1);
-        n = pituus + 1;
-        param1 = tests(1,2:n);
-        param2 = tests(end-1);
-        param3 = tests(end);
-        time = planeBoarding(param1', param2, param3,1);
-        
-        if (expectedOutcomes(i) == time)
-            pass = pass + 1;
-        end
+function pass = runTestCase();
+    [time, t1, t2] = planeBoarding([5, 1, 3]', 2, 3, 1);
+    test_pass = [];
+    if (t1 == [2 0 3]');
+        test_pass(end+1) = 1;
+    else
+        test_pass(end+1) = 0;
     end
+    if (t2 == [1 0 5]');
+        test_pass(end+1) = 1;
+    else
+        test_pass(end+1) = 0;
+    end
+    if (time == 5);
+        test_pass(end+1) = 1;
+    else
+        test_pass(end+1) = 0;
+    end
+    pass = (sum(test_pass)) / length(test_pass);     
 end
