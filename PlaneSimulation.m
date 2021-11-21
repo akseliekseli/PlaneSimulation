@@ -1,5 +1,4 @@
 %% PlaneSimulation
-<<<<<<< HEAD
 clc, clearvars, close all
 
 
