@@ -60,14 +60,5 @@ orderline = generate_window_aisle_line([1, 6, 2,5, 3,4], settings);
 time
 figure
 heatmap(odotus)
-%
-=======
 
-time = makeRandomSimulation(seats, rows,n);
-
-[time, odotus] = planeBoarding(line',...
-                               seats,...
-                               rows, 0);  
-figure
-heatmap(odotus)
 
