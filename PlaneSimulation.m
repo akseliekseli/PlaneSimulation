@@ -154,7 +154,7 @@ function wait_time = determineTime(time_step, person, row);
     stowing_time = 0;
     % Satunnainen aika, joka matkatavaroiden laittamiseen kuluu
     % aika-askel - 20*aika_askel
-    stowing_time = randi([0, time_step*20]);
+    stowing_time = randi([0, 0*time_step*20]);
     % istuuntumisaika lasketaan esim: seuraavasti
     % et?isyys kaytavasta * aika asekel
     % Mikali toiset ihmiset ovat edessa:
