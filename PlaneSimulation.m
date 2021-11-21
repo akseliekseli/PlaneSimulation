@@ -1,24 +1,6 @@
 %% PlaneSimulation
 <<<<<<< HEAD
 clc, clearvars, close all
-% testRes = runTestCase();
-% if (testRes ~= 1)
-%     disp("Testien lapaisy: " + testRes*100 + "%")
-%     return
-% end
-     
-seats = 6;                     % Penkkien maara rivilla (parillinen)
-rows = 20;                   % Rivien maara koneessa 
-n = 1000;
-
-line = [];
-
-% This code generates queue in a way that people go there one column at a
-% time
-for seatcol=1:seats
-   column = seatcol:seats:rows*seats-(seats-seatcol);
-    line = [line column];
-end
 
 
 
