@@ -61,3 +61,13 @@ time
 figure
 heatmap(odotus)
 %
+=======
+
+time = makeRandomSimulation(seats, rows,n);
+
+[time, odotus] = planeBoarding(line',...
+                               seats,...
+                               rows, 0);  
+figure
+heatmap(odotus)
+
