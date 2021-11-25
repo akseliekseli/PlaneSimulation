@@ -1,6 +1,16 @@
 %% PlaneSimulation
 clc, clearvars, close all
 
+% TODO:
+% wmi satunnaisina järjestyksinä
+% Back-to-front 
+% Front-to-back 
+    % Nämä rivi kerrallaan, random järjestyksessä penkkirivi, myös kolmannes
+    % kerrallaan
+% https://en.wikipedia.org/wiki/Steffen_Boarding_Method
+
+% Vertailu eri nousujärjestyksistä
+
 
 %%%%%%%%%%%%%%%%%% Testit %%%%%%%%%%%%%%%%%%%%%%%
 tests = [3 5 1 3 2 3];
@@ -54,20 +64,20 @@ toc
 
 simulation_analytics(times, waittimes)
 
-orderline = generate_window_aisle_line([1, 6, 2,5, 3,4], settings);
+orderline = generate_window_aisle_line([2, 4, 1,5, 3,6], settings);
 [time, odotus] = simulation(orderline,...
                                settings);  
 time
 figure
 heatmap(odotus)
-%
-=======
 
-time = makeRandomSimulation(seats, rows,n);
+numberOfSims = 1;
 
-[time, odotus] = planeBoarding(line',...
-                               seats,...
-                               rows, 0);  
-figure
-heatmap(odotus)
+lines = generate_n_random_lines(numberOfSims, settings);                                   
+%%%%%%%%%%%%%%%%%% Simulaation suoritus %%%%%%%%%
 
+tic
+[times, waittimes] = simulation(lines, settings);      % simulaation aloitus
+toc
+
+simulation_analytics(times, waittimes)
