@@ -1,0 +1,14 @@
+Verrattuna Back to Front menetelmään (No stowing time):
+
+BTF: 	+ 0%
+FTB: 	15.3%
+Rand: 	-0.01%
+Steffen: 	-0.78%
+WMA: 	-26.9%
+
+Means:
+BTF: 	185.80
+FTB: 	214.19
+Rand: 	185.78
+Steffen: 	184.35
+WMA: 	135.80

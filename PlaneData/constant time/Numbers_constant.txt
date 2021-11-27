@@ -1,0 +1,14 @@
+Verrattuna Back to Front menetelmään (constant time = 5):
+
+BTF: 	+ 0%
+FTB: 	14.2%
+Rand: 	-15.3%
+Steffen: 	-16.7%
+WMA: 	-28.4%
+
+Means:
+BTF: 	433.61
+FTB: 	495.00
+Rand: 	367.14
+Steffen: 	361.39
+WMA: 	310.38
