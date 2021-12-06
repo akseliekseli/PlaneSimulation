@@ -25,13 +25,30 @@ function [time varargout] = planeAnimation(line, seats, rows, varargin)
         figure(5)
         hold on
         axis equal
+        % Data
+        people = plot(1, -4.5, 'k.', 'MarkerSize', 20);
+        txt = "Time = " + num2str(time);
+        timer = text(-1, 2, txt, "FontSize", 14);
+        % Outer walls
         plot([0 21], [-1 -1], 'k');
-        plot([0 21], [-8 -8], 'k');
+        plot([1 21], [-8 -8], 'k');
+        % back walls
         plot([21 21], [-1, -4], 'k');
         plot([21 21], [-5 -8], 'k');
-        people = plot(1, -4.5, 'ko');
-        plot([0 21], [-4 -4], 'k');
-        plot([0 21], [-5 -5], 'k');
+        % front walls
+        plot([1 21], [-4 -4], 'k');
+        plot([1 21], [-5 -5], 'k');
+        plot([1 1], [-5 -8], 'k');
+        plot([1 1], [-1 -4], 'k');
+        % back
+        plot([21 25 25 21], [-1 -3 -6 -8] ,'k');
+        % wings
+        plot([9 11], [-1 2], 'k')
+        plot([13 14], [-1 2], 'k')
+        plot([9 11], [-8 -11], 'k')
+        plot([13 14], [-8 -11], 'k')
+        % Front
+        plot(0.5.*([-8:0.01:-1] + 7.7).*([-8:0.01:-1] + 1.3) - 1, [-8:0.01:-1], 'k');
         while (any(any(lineIn)) || any(any(aisle)))
             % Kaydaan lapi kaytava alkaen koneen lopusta
             for i = rows:-1:1
@@ -90,6 +107,7 @@ function [time varargout] = planeAnimation(line, seats, rows, varargin)
             [pcols prows] = find(temp > 0);
             people.XData = pcols + 0.5;
             people.YData = -(prows + 0.5);
+            timer.String = "Time = " + num2str(time);;
             drawnow
             pause(0.05)
             %
