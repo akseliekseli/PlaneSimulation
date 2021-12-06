@@ -1,5 +1,6 @@
 %% PlaneAnimation
-clc, clearvars, close all?
+clc, clearvars, close all
+
 %%%%%%%%%%%%%%%%% Testit %%%%%%%%%%%%%%%%%%%%%%%
 tests = [3 5 1 3 2 3];
 l = size(tests,1);
@@ -35,8 +36,8 @@ settings.const_time = const_time;
 % Tanne voi laittaa kaikki koodit, joilla rakennetaan simuloitavat
 % tapaukset. 1 SARAKE on simuloitava jono!
 
-% lines = generate_n_random_lines(1, settings);   
-lines = generate_back_to_front(1, settings, 4);
+lines = generate_n_random_lines(1, settings);   
+% lines = generate_back_to_front(1, settings, 4);
 % lines = generate_steffen_mod(1, settings);
 % lines = generate_steffen_perf(1, settings);
 % lines = generate_wma(1, settings);
