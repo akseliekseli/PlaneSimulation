@@ -1,5 +1,5 @@
 %% PlaneAnimation
-clc, clearvars, close all?
+clc, clearvars, close all
 %%%%%%%%%%%%%%%%% Testit %%%%%%%%%%%%%%%%%%%%%%%
 tests = [3 5 1 3 2 3];
 l = size(tests,1);
