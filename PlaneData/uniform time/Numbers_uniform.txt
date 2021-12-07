@@ -1,0 +1,14 @@
+Verrattuna Back to Front menetelmään (uniform time [0, 15]):
+
+BTF: 	+ 0%
+FTB: 	13.9%
+Rand: 	-17.2%
+Steffen: 	-18.5%
+WMA: 	-26.2%
+
+Means:
+BTF: 	594.43
+FTB: 	677.16
+Rand: 	492.14
+Steffen: 	484.29
+WMA: 	438.50
