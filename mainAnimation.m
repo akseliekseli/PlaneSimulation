@@ -1,6 +1,10 @@
 %% PlaneAnimation
 clc, clearvars, close all
-
+currentFolderContents = dir(pwd);      %Returns all files and folders in the current folder
+currentFolderContents (~[currentFolderContents.isdir]) = [];  %Only keep the folders
+for i = 3:length(currentFolderContents)           %Start with 3 to avoid '.' and '..' 
+   addpath(['./' currentFolderContents(i).name]) 
+end
 %%%%%%%%%%%%%%%%% Testit %%%%%%%%%%%%%%%%%%%%%%%
 tests = [3 5 1 3 2 3];
 l = size(tests,1);
@@ -36,12 +40,13 @@ settings.const_time = const_time;
 % Tanne voi laittaa kaikki koodit, joilla rakennetaan simuloitavat
 % tapaukset. 1 SARAKE on simuloitava jono!
 
-lines = generate_n_random_lines(1, settings);   
+% lines = generate_n_random_lines(1, settings);   
 % lines = generate_back_to_front(1, settings, 4);
 % lines = generate_steffen_mod(1, settings);
-% lines = generate_steffen_perf(1, settings);
+lines = generate_steffen_perf(1, settings);
 % lines = generate_wma(1, settings);
 % lines = flip(generate_back_to_front(1, settings, 4), 1);
+% lines = [[115:-6:1], [120:-6:6], [116:-6:2], [119:-6:5], [117:-6:3], [118:-6:4]]';
 
 %%%%%%%%%%%%%%%%%% Simulaation suoritus %%%%%%%%%
 % asetuksien purku
@@ -54,18 +59,18 @@ const_time = settings.const_time;
 % Maaritetaan yksiloiden ajankaytto asetuksen mukaan
 switch rand_state
     case 1
-        rand_times = t_step*const_time.*ones(length(line),1);
+        rand_times = t_step*const_time.*ones(length(lines),1);
     case 2
-        rand_times = randi([0, t_step*20], length(line), 1);
+        rand_times = randi([0, t_step*20], length(lines), 1);
     case 3
         % Beta-jakauman parametrit:
         alpha = 2;
         beta = 5;
         absmax = t_step*20;
         %
-        rand_times = floor(absmax*betarnd(alpha,beta,length(line),1));
+        rand_times = floor(absmax*betarnd(alpha,beta,length(lines),1));
     otherwise
-        rand_times = zeros(length(line),1);
+        rand_times = zeros(length(lines),1);
 end
 close all % Figure(1) aukee jostain syyst? s.e. siell? on viiva 0,0 - 1,1
 % en loytanyt viela syyta

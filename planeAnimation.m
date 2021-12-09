@@ -26,7 +26,11 @@ function [time varargout] = planeAnimation(line, seats, rows, varargin)
         hold on
         axis equal
         % Data
-        people = plot(1, -4.5, 'k.', 'MarkerSize', 20);
+        people = plot(0.5, -4.5, 'k.', 'MarkerSize', 20);
+        delay = plot(0.5, -4.5, 'r.', 'MarkerSize', 20);
+        queue = plot(0.5, -4.5, 'k.', 'MarkerSize', 20);
+        queue.XData = zeros(9,1) + 0.5;
+        queue.YData = -([1:9] + 3.5);
         txt = "Time = " + num2str(time);
         timer = text(-1, 2, txt, "FontSize", 14);
         % Outer walls
@@ -40,6 +44,8 @@ function [time varargout] = planeAnimation(line, seats, rows, varargin)
         plot([1 21], [-5 -5], 'k');
         plot([1 1], [-5 -8], 'k');
         plot([1 1], [-1 -4], 'k');
+        plot([0 0], [-8, -5], 'k');
+        plot([0 0], [-1, -4], 'k');
         % back
         plot([21 25 25 21], [-1 -3 -6 -8] ,'k');
         % wings
@@ -49,6 +55,14 @@ function [time varargout] = planeAnimation(line, seats, rows, varargin)
         plot([13 14], [-8 -11], 'k')
         % Front
         plot(0.5.*([-8:0.01:-1] + 7.7).*([-8:0.01:-1] + 1.3) - 1, [-8:0.01:-1], 'k');
+        % Tube
+        plot([0 0], [-11, -8], 'b');
+        plot([1 1], [-8 -14], 'b');
+        plot([0 -5], [-11, -11], 'b');
+        plot([1 -5], [-14 -14], 'b');
+        quiver(-1, -12.5, -4, 0, 'b>', 'LineWidth', 2)
+        drawnow;
+        pause(1);
         while (any(any(lineIn)) || any(any(aisle)))
             % Kaydaan lapi kaytava alkaen koneen lopusta
             for i = rows:-1:1
@@ -100,13 +114,23 @@ function [time varargout] = planeAnimation(line, seats, rows, varargin)
             time = time + time_step;
             aisle;
             odotus;
-            
+
             % Tama suoritetaan jokaisen while-kierroksen jalkeen:
             varargout{1} = wait_map;
             temp = [plane(:,1:seats/2), aisle(:, 1), plane(:,seats/2+1:end)];
             [pcols prows] = find(temp > 0);
             people.XData = pcols + 0.5;
             people.YData = -(prows + 0.5);
+            [dcols drows] = find(odotus(:, 1) == 1);
+            delay.XData = dcols + 0.5;
+            delay.YData = -(drows + 3.5);
+            if (length(lineIn(:, 1)) > 9)
+                queue.XData = zeros(9,1) + 0.5;
+                queue.YData = -([1:9] + 3.5);
+            else
+                queue.XData = zeros(size(1:length(lineIn(:, 1)))) + 0.5;
+                queue.YData = -([1:length(lineIn(:, 1))] + 3.5);
+            end
             timer.String = "Time = " + num2str(time);;
             drawnow
             pause(0.05)
