@@ -1,10 +1,6 @@
 %% PlaneAnimation
 clc, clearvars, close all
-currentFolderContents = dir(pwd);      %Returns all files and folders in the current folder
-currentFolderContents (~[currentFolderContents.isdir]) = [];  %Only keep the folders
-for i = 3:length(currentFolderContents)           %Start with 3 to avoid '.' and '..' 
-   addpath(['./' currentFolderContents(i).name]) 
-end
+
 %%%%%%%%%%%%%%%%% Testit %%%%%%%%%%%%%%%%%%%%%%%
 tests = [3 5 1 3 2 3];
 l = size(tests,1);
@@ -43,10 +39,10 @@ settings.const_time = const_time;
 % lines = generate_n_random_lines(1, settings);   
 % lines = generate_back_to_front(1, settings, 4);
 % lines = generate_steffen_mod(1, settings);
-lines = generate_steffen_perf(1, settings);
+% lines = generate_steffen_perf(1, settings);
 % lines = generate_wma(1, settings);
 % lines = flip(generate_back_to_front(1, settings, 4), 1);
-% lines = [[115:-6:1], [120:-6:6], [116:-6:2], [119:-6:5], [117:-6:3], [118:-6:4]]';
+lines = [[115:-6:1], [120:-6:6], [116:-6:2], [119:-6:5], [117:-6:3], [118:-6:4]]';
 
 %%%%%%%%%%%%%%%%%% Simulaation suoritus %%%%%%%%%
 % asetuksien purku
